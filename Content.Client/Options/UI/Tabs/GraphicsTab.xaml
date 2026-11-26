@@ -20,6 +20,8 @@ SPDX-License-Identifier: AGPL-3.0-or-later
                 <CheckBox Name="ViewportLowResCheckBox" Text="{Loc 'ui-options-vp-low-res'}" />
                 <CheckBox Name="ParallaxLowQualityCheckBox" Text="{Loc 'ui-options-parallax-low-quality'}" />
                 <CheckBox Name="AmbientOcclusionCheckBox" Text="{Loc 'ui-options-ambient-occlusion'}" />
+                <!-- Sunlight Changes: Let players trade smoother sunlight edges for a cheaper render pass. -->
+                <CheckBox Name="SunlightTemporalCheckBox" Text="{Loc 'ui-options-sunlight-temporal'}" />
 
                 <!-- Interface -->
                 <Label Text="{Loc 'ui-options-interface-label'}" StyleClasses="LabelKeyText"/>

@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+# Sunlight Changes: Composite one directional mask into the existing light target, with optional two-frame sampling.
+- type: shader
+  id: MapSunlight
+  kind: source
+  path: /Textures/Shaders/map_sunlight.swsl

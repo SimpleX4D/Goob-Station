@@ -102,6 +102,8 @@ ui-options-vp-vertical-fit-tooltip =
 ui-options-vp-low-res = Изображение низкого разрешения
 ui-options-parallax-low-quality = Низкокачественный параллакс (фон)
 ui-options-ambient-occlusion = Отображать окружающее затенение
+# Sunlight Changes: Identify the effect and its fixed two-frame history in graphics settings.
+ui-options-sunlight-temporal = Сглаживать края солнечных теней (2 кадра)
 ui-options-fps-counter = Показать счётчик FPS
 ui-options-vp-width = Ширина окна игры:
 ui-options-hud-layout = Тип HUD:

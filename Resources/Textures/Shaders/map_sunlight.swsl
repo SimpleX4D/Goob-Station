@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+light_mode unshaded;
+
+uniform sampler2D PreviousMask;
+uniform highp vec2 PreviousOffset;
+uniform bool BlendPrevious;
+
+void fragment()
+{
+    // Sunlight Changes: Sample both same-size render targets in framebuffer coordinates so the resolve stays pixel-aligned.
+    highp vec2 uv = FRAGCOORD.xy * TEXTURE_PIXEL_SIZE;
+    highp float exposure = zTextureSpec(TEXTURE, uv).r;
+    highp vec2 previousUv = uv + PreviousOffset;
+    if (BlendPrevious && all(greaterThanEqual(previousUv, vec2(0.0))) && all(lessThan(previousUv, vec2(1.0))))
+        exposure = 0.5 * (exposure + zTextureSpec(PreviousMask, previousUv).r);
+
+    // Sunlight Changes: Output straight alpha so fully shadowed pixels preserve existing ambient and local lights.
+    COLOR = vec4(1.0, 1.0, 1.0, exposure);
+}

@@ -23,6 +23,8 @@ public sealed partial class GraphicsTab : Control
 
         Control.AddOptionCheckBox(CVars.DisplayVSync, VSyncCheckBox);
         Control.AddOptionCheckBox(CCVars.AmbientOcclusion, AmbientOcclusionCheckBox);
+        // Sunlight Changes: Persist the preference with the ordinary client graphics options.
+        Control.AddOptionCheckBox(CCVars.StationSunlightTemporal, SunlightTemporalCheckBox);
         Control.AddOption(new OptionFullscreen(Control, _cfg, FullscreenCheckBox));
         Control.AddOption(new OptionLightingQuality(Control, _cfg, DropDownLightingQuality));
         Control.AddOption(new OptionParticleQuality(Control, _cfg, DropDownParticleQuality)); // Starfall: Particle quality.

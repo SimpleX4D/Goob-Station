@@ -54,6 +54,23 @@ public sealed class PlanetLightSystem : EntitySystem
         _overlayMan.AddOverlay(new LightBlurOverlay());
         _overlayMan.AddOverlay(new SunShadowOverlay());
         _overlayMan.AddOverlay(new AfterLightTargetOverlay());
+        // Sunlight Changes: Composite direct sunlight after ambient, roof and tile lighting are in the light target.
+        Subs.CVar(_cfgManager, CCVars.StationSunlightRender, SetSunlightRender, true);
+    }
+
+    // Sunlight Changes: Remove the overlay on a server-wide disable so render history cannot survive a policy change.
+    private void SetSunlightRender(bool enabled)
+    {
+        if (enabled)
+        {
+            if (!_overlayMan.HasOverlay<MapSunlightOverlay>())
+                _overlayMan.AddOverlay(new MapSunlightOverlay());
+        }
+        else if (_overlayMan.TryGetOverlay<MapSunlightOverlay>(out var overlay))
+        {
+            _overlayMan.RemoveOverlay(overlay);
+            overlay.Dispose();
+        }
     }
 
     private void OnClearColor(ref GetClearColorEvent ev)
@@ -70,5 +87,7 @@ public sealed class PlanetLightSystem : EntitySystem
         _overlayMan.RemoveOverlay<LightBlurOverlay>();
         _overlayMan.RemoveOverlay<SunShadowOverlay>();
         _overlayMan.RemoveOverlay<AfterLightTargetOverlay>();
+        // Sunlight Changes: Release both frame masks when the client entity systems shut down.
+        SetSunlightRender(false);
     }
 }

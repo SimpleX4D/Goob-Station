@@ -104,6 +104,8 @@ ui-options-vp-vertical-fit-tooltip = When enabled, the main viewport will ignore
 ui-options-vp-low-res = Low-resolution viewport
 ui-options-parallax-low-quality = Low-quality Parallax (background)
 ui-options-ambient-occlusion = Show Ambient Occlusion
+# Sunlight Changes: Identify the effect and its fixed two-frame history in graphics settings.
+ui-options-sunlight-temporal = Smooth sunlight edges (2 frames)
 ui-options-fps-counter = Show FPS counter
 ui-options-vp-width = Viewport width:
 ui-options-hud-layout = HUD layout:
