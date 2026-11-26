@@ -31,6 +31,8 @@ internal sealed class MapSunlightOverlay : Overlay
     private readonly OverlayResourceCache<ViewportMasks> _masks = new();
     private readonly List<Entity<OccluderComponent, TransformComponent>> _occluders = new();
     private readonly List<Vector2> _triangles = new();
+    // Sunlight Changes: Reuse a managed buffer so the shadow pass passes the launcher IL verifier without per-frame allocations.
+    private readonly Vector2[] _shadowPoints = new Vector2[8];
     private ShaderInstance? _composite;
 
     public override OverlaySpace Space => OverlaySpace.BeforeLighting;
@@ -123,7 +125,7 @@ internal sealed class MapSunlightOverlay : Overlay
         _triangles.Clear();
         _entities.System<OccluderSystem>().QueryAabb(_occluders, args.MapId, bounds);
         var transforms = _entities.System<SharedTransformSystem>();
-        Span<Vector2> points = stackalloc Vector2[8];
+        var points = _shadowPoints;
 
         foreach (var occluder in _occluders)
         {
