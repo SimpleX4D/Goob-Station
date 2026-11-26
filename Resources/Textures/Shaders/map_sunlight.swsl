@@ -6,6 +6,8 @@ uniform highp vec2 CurrentOffset;
 uniform highp vec2 PreviousOffset;
 uniform sampler2D PreviousMask;
 uniform bool BlendPrevious;
+uniform sampler2D LiveMask;
+uniform bool ApplyLiveMask;
 
 highp vec4 sampleMask(sampler2D mask, highp vec2 pixel)
 {
@@ -25,6 +27,10 @@ void fragment()
         // Sunlight Changes: Fade only where both snapshots knew the geometry so receiver boundaries do not flash.
         exposure += 0.5 * min(current.a, previous.a) * (previous.r - current.r);
     }
+
+    // Sunlight Changes: Apply the current poses after history so a turning shuttle never leaves a second shadow.
+    if (ApplyLiveMask)
+        exposure *= sampleMask(LiveMask, FRAGCOORD.xy + CurrentOffset).r;
 
     COLOR = vec4(1.0, 1.0, 1.0, exposure);
 }
