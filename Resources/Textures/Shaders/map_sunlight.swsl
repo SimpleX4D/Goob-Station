@@ -2,19 +2,29 @@
 
 light_mode unshaded;
 
-uniform sampler2D PreviousMask;
+uniform highp vec2 CurrentOffset;
 uniform highp vec2 PreviousOffset;
+uniform sampler2D PreviousMask;
 uniform bool BlendPrevious;
+
+highp vec4 sampleMask(sampler2D mask, highp vec2 pixel)
+{
+    // Sunlight Changes: Resolve a stable edge footprint without alternating the raster position across frames.
+    highp vec2 uv = pixel * TEXTURE_PIXEL_SIZE;
+    highp vec2 filterOffset = 0.5 * TEXTURE_PIXEL_SIZE;
+    return 0.5 * (zTextureSpec(mask, uv - filterOffset) + zTextureSpec(mask, uv + filterOffset));
+}
 
 void fragment()
 {
-    // Sunlight Changes: Sample both same-size render targets in framebuffer coordinates so the resolve stays pixel-aligned.
-    highp vec2 uv = FRAGCOORD.xy * TEXTURE_PIXEL_SIZE;
-    highp float exposure = zTextureSpec(TEXTURE, uv).r;
-    highp vec2 previousUv = uv + PreviousOffset;
-    if (BlendPrevious && all(greaterThanEqual(previousUv, vec2(0.0))) && all(lessThan(previousUv, vec2(1.0))))
-        exposure = 0.5 * (exposure + zTextureSpec(PreviousMask, previousUv).r);
+    highp vec4 current = sampleMask(TEXTURE, FRAGCOORD.xy + CurrentOffset);
+    highp float exposure = current.r;
+    if (BlendPrevious && current.a > 0.0)
+    {
+        highp vec4 previous = sampleMask(PreviousMask, FRAGCOORD.xy + PreviousOffset);
+        // Sunlight Changes: Fade only where both snapshots knew the geometry so receiver boundaries do not flash.
+        exposure += 0.5 * min(current.a, previous.a) * (previous.r - current.r);
+    }
 
-    // Sunlight Changes: Output straight alpha so fully shadowed pixels preserve existing ambient and local lights.
     COLOR = vec4(1.0, 1.0, 1.0, exposure);
 }

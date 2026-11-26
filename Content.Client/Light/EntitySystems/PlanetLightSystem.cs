@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 using Content.Shared.CCVar;
+using Content.Shared.Light;
+using Robust.Client;
 using Robust.Client.Graphics;
 using Robust.Shared.Configuration;
 
@@ -37,11 +39,17 @@ public sealed class PlanetLightSystem : EntitySystem
 
     private bool _ambientOcclusion;
 
+    // Sunlight Changes: Keep only the active connection's receiver geometry.
+    [Dependency] private IBaseClient _client = default!;
+    internal MapSunlightSnapshot? Sunlight { get; private set; }
+
     public override void Initialize()
     {
         base.Initialize();
 
         SubscribeLocalEvent<GetClearColorEvent>(OnClearColor);
+        SubscribeNetworkEvent<MapSunlightSnapshot>(OnSunlightSnapshot);
+        _client.RunLevelChanged += OnRunLevelChanged;
 
         _cfgManager.OnValueChanged(CCVars.AmbientOcclusion, val =>
         {
@@ -64,13 +72,28 @@ public sealed class PlanetLightSystem : EntitySystem
         if (enabled)
         {
             if (!_overlayMan.HasOverlay<MapSunlightOverlay>())
-                _overlayMan.AddOverlay(new MapSunlightOverlay());
+                _overlayMan.AddOverlay(new MapSunlightOverlay(this));
         }
-        else if (_overlayMan.TryGetOverlay<MapSunlightOverlay>(out var overlay))
+        else
         {
-            _overlayMan.RemoveOverlay(overlay);
-            overlay.Dispose();
+            Sunlight = null;
+            if (_overlayMan.TryGetOverlay<MapSunlightOverlay>(out var overlay))
+            {
+                _overlayMan.RemoveOverlay(overlay);
+                overlay.Dispose();
+            }
         }
+    }
+
+    private void OnSunlightSnapshot(MapSunlightSnapshot snapshot)
+    {
+        Sunlight = snapshot.Regions.Length > 0 ? snapshot : null;
+    }
+
+    private void OnRunLevelChanged(object? sender, RunLevelChangedEventArgs ev)
+    {
+        if (ev.NewLevel != ClientRunLevel.InGame)
+            Sunlight = null;
     }
 
     private void OnClearColor(ref GetClearColorEvent ev)
@@ -87,6 +110,7 @@ public sealed class PlanetLightSystem : EntitySystem
         _overlayMan.RemoveOverlay<LightBlurOverlay>();
         _overlayMan.RemoveOverlay<SunShadowOverlay>();
         _overlayMan.RemoveOverlay<AfterLightTargetOverlay>();
+        _client.RunLevelChanged -= OnRunLevelChanged;
         // Sunlight Changes: Release both frame masks when the client entity systems shut down.
         SetSunlightRender(false);
     }
